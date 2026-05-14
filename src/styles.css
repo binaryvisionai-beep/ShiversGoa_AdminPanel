@@ -158,4 +158,36 @@
     background-clip: text;
     color: transparent;
   }
+
+  /* Premium thin scrollbars */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in oklab, currentColor 18%, transparent) transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar { width: 6px; height: 6px; }
+  .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: color-mix(in oklab, currentColor 16%, transparent);
+    border-radius: 9999px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: color-mix(in oklab, currentColor 28%, transparent);
+  }
+  .scrollbar-thin::-webkit-scrollbar-corner { background: transparent; }
+}
+
+/* Global premium scrollbar */
+html { scrollbar-width: thin; scrollbar-color: color-mix(in oklab, var(--foreground) 14%, transparent) transparent; }
+*::-webkit-scrollbar { width: 10px; height: 10px; }
+*::-webkit-scrollbar-track { background: transparent; }
+*::-webkit-scrollbar-thumb {
+  background: color-mix(in oklab, var(--foreground) 14%, transparent);
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in oklab, var(--foreground) 26%, transparent);
+  background-clip: padding-box;
+  border: 2px solid transparent;
 }
