@@ -97,7 +97,7 @@ export default function DashboardPage() {
       </div>
 
       {/* KPI cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-4">
         <KPICard
           label="Total Revenue"
           value="$248,920"
@@ -133,8 +133,8 @@ export default function DashboardPage() {
       </div>
 
       {/* Revenue + Occupancy */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
-        <Card className="xl:col-span-2">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <Card className="lg:col-span-2">
           <CardHeader title="Revenue Analytics" sub="Compared to previous period">
             <div className="flex items-center gap-4 text-xs">
               <Legend color="var(--primary)" label="This year" />
@@ -198,8 +198,8 @@ export default function DashboardPage() {
       </div>
 
       {/* Bookings + Activity */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
-        <Card className="xl:col-span-2 p-0 overflow-hidden">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <Card className="lg:col-span-2 p-0 overflow-hidden">
           <div className="p-6 pb-4 flex items-center justify-between">
             <div>
               <h3 className="font-display text-lg">Recent Bookings</h3>
