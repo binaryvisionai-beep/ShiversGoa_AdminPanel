@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 
-export function ThemeToggle() {
+export function ThemeToggle({ className }: { className?: string }) {
   const { theme, setTheme } = useTheme();
 
   return (
@@ -20,7 +20,10 @@ export function ThemeToggle() {
         <motion.button
           type="button"
           whileTap={{ scale: 0.94 }}
-          className="relative size-10 rounded-xl hover:bg-accent flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+          className={cn(
+            "relative size-10 rounded-xl hover:bg-accent flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors",
+            className,
+          )}
           aria-label="Color theme"
         >
           <motion.span

@@ -1,14 +1,17 @@
 import { useEffect, useState } from "react";
 import {
-  ImagePlus,
   CheckCircle2,
+  ImagePlus,
   Loader2,
+  Trash2,
 } from "lucide-react";
 
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/supabase";
+import { cn } from "@/lib/utils";
 
 type UploadField =
-  | "heroImage"
   | "logo"
   | "welcomeCard1Image"
   | "welcomeCard2Image"
@@ -17,6 +20,37 @@ type UploadField =
   | "offering1Image"
   | "offering2Image"
   | "offering3Image";
+
+function parseHeroImagesLibrary(stored: unknown): string[] {
+  if (Array.isArray(stored)) {
+    return stored.filter(
+      (u): u is string => typeof u === "string" && u.length > 0
+    );
+  }
+
+  if (typeof stored === "string" && stored.trim()) {
+    try {
+      const parsed = JSON.parse(stored) as unknown;
+      if (Array.isArray(parsed)) {
+        return parsed.filter(
+          (u): u is string => typeof u === "string" && u.length > 0
+        );
+      }
+    } catch {
+      return [];
+    }
+  }
+
+  return [];
+}
+
+function mergeHeroLibrary(liveHero: string, library: string[]): string[] {
+  if (liveHero && !library.includes(liveHero)) {
+    return [liveHero, ...library];
+  }
+  if (library.length > 0) return library;
+  return liveHero ? [liveHero] : [];
+}
 
 export default function AdminHomepagePage() {
   const [clicks, setClicks] = useState<any[]>([]);
@@ -90,19 +124,23 @@ const [loadingClicks, setLoadingClicks] = useState(true);
   });
 
   const [preview, setPreview] = useState<Record<string, string>>({});
+  const [heroImages, setHeroImages] = useState<string[]>([]);
+  const [heroUploading, setHeroUploading] = useState(false);
 
-  useEffect(() => {
-    loadHomepage();
-  }, []);
-
-  const loadHomepage = async () => {
+  const loadHomepage = async (isActive: () => boolean = () => true) => {
     try {
       const { data, error } = await supabase
         .from("homepage_content")
         .select("*")
         .single();
 
-      if (error || !data) return;
+      if (!isActive() || error || !data) return;
+
+      const liveHero = (data.hero_image as string) || "";
+      const library = parseHeroImagesLibrary(data.hero_images);
+      const merged = mergeHeroLibrary(liveHero, library);
+
+      setHeroImages(merged);
 
       setFormData((prev) => ({
         ...prev,
@@ -114,8 +152,7 @@ const [loadingClicks, setLoadingClicks] = useState(true);
           data.hero_description ||
           prev.heroDescription,
 
-        heroImage:
-          data.hero_image || prev.heroImage,
+        heroImage: liveHero || merged[0] || prev.heroImage,
 
         welcomeTitle:
           data.welcome_title ||
@@ -256,6 +293,35 @@ const [loadingClicks, setLoadingClicks] = useState(true);
     }
   };
 
+  useEffect(() => {
+    let active = true;
+    loadHomepage(() => active);
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const persistHeroLibrary = async (
+    library: string[],
+    liveHero: string
+  ): Promise<boolean> => {
+    const merged = mergeHeroLibrary(liveHero, library);
+    const { error } = await supabase.from("homepage_content").upsert({
+      id: "00000000-0000-0000-0000-000000000001",
+      hero_image: liveHero,
+      hero_images: merged,
+    });
+
+    if (error) {
+      console.error(error);
+      alert(error.message);
+      return false;
+    }
+
+    setHeroImages(merged);
+    return true;
+  };
+
 
 
 
@@ -354,11 +420,87 @@ useEffect(() => {
     }
   };
 
+  const handleHeroImagesUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files?.length) return;
+
+    try {
+      setHeroUploading(true);
+      setSaveMessage("");
+
+      const uploadedUrls: string[] = [];
+
+      for (const [index, file] of Array.from(files).entries()) {
+        const fileName = `hero-${Date.now()}-${index}-${file.name}`;
+        const { error } = await supabase.storage.from("homepage").upload(fileName, file);
+        if (error) {
+          console.error(error);
+          alert(`Failed to upload ${file.name}`);
+          continue;
+        }
+        const {
+          data: { publicUrl },
+        } = supabase.storage.from("homepage").getPublicUrl(fileName);
+        uploadedUrls.push(publicUrl);
+      }
+
+      if (uploadedUrls.length === 0) return;
+
+      const nextLibrary = [...heroImages];
+      for (const url of uploadedUrls) {
+        if (!nextLibrary.includes(url)) nextLibrary.push(url);
+      }
+      const nextLive = formData.heroImage || uploadedUrls[0];
+
+      setHeroImages(nextLibrary);
+      setFormData((prev) => ({
+        ...prev,
+        heroImage: nextLive,
+      }));
+
+      const saved = await persistHeroLibrary(nextLibrary, nextLive);
+      setSaveMessage(
+        saved
+          ? `${uploadedUrls.length} hero image(s) saved to library`
+          : "Upload succeeded but library could not be saved"
+      );
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setHeroUploading(false);
+      e.target.value = "";
+    }
+  };
+
+  const selectHeroImage = async (url: string) => {
+    setFormData((prev) => ({ ...prev, heroImage: url }));
+    const saved = await persistHeroLibrary(heroImages, url);
+    if (saved) {
+      setSaveMessage("Live hero image updated");
+    }
+  };
+
+  const removeHeroImage = async (url: string) => {
+    const next = heroImages.filter((u) => u !== url);
+    const nextLive =
+      formData.heroImage !== url ? formData.heroImage : (next[0] ?? "");
+
+    setHeroImages(next);
+    setFormData((fd) => ({ ...fd, heroImage: nextLive }));
+
+    const saved = await persistHeroLibrary(next, nextLive);
+    if (saved) {
+      setSaveMessage("Hero image removed from library");
+    }
+  };
+
   const handleSave = async () => {
     try {
       setSaving(true);
 
       setSaveMessage("");
+
+      const libraryToSave = mergeHeroLibrary(formData.heroImage, heroImages);
 
       const { error } = await supabase
         .from("homepage_content")
@@ -369,6 +511,7 @@ useEffect(() => {
           hero_description:
             formData.heroDescription,
           hero_image: formData.heroImage,
+          hero_images: libraryToSave,
 
           welcome_title:
             formData.welcomeTitle,
@@ -486,6 +629,8 @@ useEffect(() => {
       setSaveMessage(
         "Homepage saved successfully"
       );
+      setHeroImages(libraryToSave);
+      await loadHomepage();
     } catch (error) {
       console.error(error);
       alert("Something went wrong");
@@ -493,6 +638,107 @@ useEffect(() => {
       setSaving(false);
     }
   };
+
+  const HeroImageManager = () => (
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <label className="text-sm font-medium">Hero Image Library</label>
+          <p className="text-sm text-muted-foreground mt-1">
+            Upload multiple images. Click one to set it live on the homepage.
+          </p>
+        </div>
+
+        <label className="h-10 px-4 rounded-2xl border inline-flex items-center gap-2 cursor-pointer hover:bg-muted transition-colors">
+          {heroUploading ? (
+            <Loader2 className="size-4 animate-spin" />
+          ) : (
+            <ImagePlus className="size-4" />
+          )}
+          <span className="text-sm">
+            {heroUploading ? "Uploading..." : "Add images"}
+          </span>
+          <input
+            type="file"
+            accept="image/*"
+            multiple
+            onChange={handleHeroImagesUpload}
+            disabled={heroUploading}
+            className="hidden"
+          />
+        </label>
+      </div>
+
+      {formData.heroImage && (
+        <div className="space-y-2">
+          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+            Live preview
+          </p>
+          <div className="relative">
+            <img
+              src={formData.heroImage}
+              alt="Live hero"
+              className="w-full h-64 object-cover rounded-2xl border"
+            />
+            <Badge className="absolute top-3 left-3">Live</Badge>
+          </div>
+        </div>
+      )}
+
+      {heroImages.length === 0 ? (
+        <div className="rounded-2xl border border-dashed p-8 text-center text-sm text-muted-foreground">
+          No hero images yet. Upload one or more to build your library.
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+          {heroImages.map((url) => {
+            const isLive = formData.heroImage === url;
+            return (
+              <div
+                key={url}
+                className={cn(
+                  "group relative rounded-2xl overflow-hidden border-2 transition-colors",
+                  isLive
+                    ? "border-primary ring-2 ring-primary/20"
+                    : "border-transparent hover:border-muted-foreground/30"
+                )}
+              >
+                <button
+                  type="button"
+                  onClick={() => selectHeroImage(url)}
+                  className="block w-full text-left"
+                  title={isLive ? "Currently live" : "Set as live hero image"}
+                >
+                  <img
+                    src={url}
+                    alt="Hero library"
+                    className="w-full h-32 object-cover"
+                  />
+                </button>
+
+                {isLive && (
+                  <Badge className="absolute top-2 left-2 pointer-events-none">
+                    Live
+                  </Badge>
+                )}
+
+                <Button
+                  type="button"
+                  variant="destructive"
+                  size="icon"
+                  onClick={() => removeHeroImage(url)}
+                  className="absolute top-2 right-2 size-8 opacity-0 group-hover:opacity-100 transition-opacity"
+                  title="Remove from library"
+                >
+                  <Trash2 className="size-4" />
+                </Button>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
 
   const UploadBox = ({
     field,
@@ -696,10 +942,7 @@ const trackHomepageClick = async (cta: string) => {
           className="w-full rounded-xl border p-4 bg-background"
         />
 
-        <UploadBox
-          field="heroImage"
-          label="Hero Image"
-        />
+        <HeroImageManager />
       </div>
 
       {/* WELCOME */}

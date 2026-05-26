@@ -143,6 +143,16 @@
   }
 }
 
+/* Admin shell — viewport height; main scrolls, sidebar stays put */
+.admin-shell {
+  max-width: 100vw;
+  overflow-x: hidden;
+  overscroll-behavior-x: none;
+}
+.admin-main {
+  -webkit-overflow-scrolling: touch;
+}
+
 @layer utilities {
   .glass {
     background: color-mix(in oklab, var(--card) 70%, transparent);

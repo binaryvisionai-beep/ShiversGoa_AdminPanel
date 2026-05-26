@@ -78,30 +78,41 @@ export default function DashboardPage() {
   const displayName = session?.name ?? "Guest";
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 min-w-0 max-w-full overflow-x-hidden">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
-        <div>
+      <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between min-w-0">
+        <div className="min-w-0">
           <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
             Thursday · May 14, 2026
           </p>
-          <h1 className="font-display text-3xl md:text-4xl mt-1">
-            Welcome back, <span className="text-gradient-amber">{displayName}</span>
+          <h1 className="font-display text-2xl sm:text-3xl md:text-4xl mt-1 break-words leading-tight">
+            Welcome back,{" "}
+            <span className="text-gradient-amber break-words">{displayName}</span>
           </h1>
           <p className="text-muted-foreground mt-1 text-sm">
             Here's what's unfolding across the estate today.
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" className="rounded-xl">Last 30 days</Button>
-          <Button className="rounded-xl bg-gradient-amber border-0 text-primary-foreground shadow-glow hover:opacity-95">
-            <Sparkles className="size-4" /> New booking
+        <div className="hidden sm:flex flex-col sm:flex-row gap-2 w-full md:w-auto shrink-0">
+          <Button variant="outline" className="rounded-xl h-11 w-full sm:w-auto">
+            Last 30 days
+          </Button>
+          <Button className="rounded-xl h-11 w-full sm:w-auto bg-gradient-amber border-0 text-primary-foreground shadow-glow hover:opacity-95">
+            <Sparkles className="size-4 shrink-0" /> New booking
           </Button>
         </div>
       </div>
 
+      {/* Mobile FAB — Android-style primary action */}
+      <Button
+        className="md:hidden fixed right-4 z-30 size-14 rounded-2xl p-0 shadow-lift bg-gradient-amber border-0 text-primary-foreground hover:opacity-95 bottom-[calc(4.75rem+env(safe-area-inset-bottom))]"
+        aria-label="New booking"
+      >
+        <Sparkles className="size-6" />
+      </Button>
+
       {/* KPI cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4 min-w-0">
         <KPICard
           label="Total Revenue"
           value="—"
@@ -134,17 +145,17 @@ export default function DashboardPage() {
       </div>
 
       {/* Revenue + Occupancy */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <Card className="lg:col-span-2">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4 min-w-0">
+        <Card className="lg:col-span-2 min-w-0">
           <CardHeader title="Revenue Analytics" sub="Compared to previous period">
-            <div className="flex items-center gap-4 text-xs">
+            <div className="flex flex-wrap items-center gap-3 text-xs">
               <Legend color="var(--primary)" label="This year" />
               <Legend color="color-mix(in oklab, var(--bronze) 60%, transparent)" label="Last year" />
             </div>
           </CardHeader>
-          <div className="h-72">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={revenueData} margin={{ top: 8, right: 12, left: -12, bottom: 0 }}>
+          <div className="h-52 sm:h-64 lg:h-72 min-w-0 w-full overflow-hidden">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} debounce={50}>
+              <AreaChart data={revenueData} margin={{ top: 8, right: 4, left: 0, bottom: 0 }}>
                 <defs>
                   <linearGradient id="g1" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stopColor="var(--primary)" stopOpacity={0.45} />
@@ -156,8 +167,20 @@ export default function DashboardPage() {
                   </linearGradient>
                 </defs>
                 <CartesianGrid stroke="var(--border)" vertical={false} strokeDasharray="3 6" />
-                <XAxis dataKey="m" axisLine={false} tickLine={false} tick={{ fill: "var(--muted-foreground)", fontSize: 12 }} />
-                <YAxis axisLine={false} tickLine={false} tick={{ fill: "var(--muted-foreground)", fontSize: 12 }} tickFormatter={(v) => `$${v / 1000}k`} />
+                <XAxis
+                  dataKey="m"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: "var(--muted-foreground)", fontSize: 10 }}
+                  interval="preserveStartEnd"
+                />
+                <YAxis
+                  width={36}
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: "var(--muted-foreground)", fontSize: 10 }}
+                  tickFormatter={(v) => `$${v / 1000}k`}
+                />
                 <RTooltip content={<ChartTip />} />
                 <Area type="monotone" dataKey="prev" stroke="var(--bronze)" strokeWidth={2} fill="url(#g2)" />
                 <Area type="monotone" dataKey="revenue" stroke="var(--primary)" strokeWidth={2.5} fill="url(#g1)" />
@@ -166,11 +189,11 @@ export default function DashboardPage() {
           </div>
         </Card>
 
-        <Card>
+        <Card className="min-w-0">
           <CardHeader title="Occupancy" sub="This week" />
-          <div className="flex items-center gap-6">
-            <div className="relative size-40 shrink-0">
-              <ResponsiveContainer width="100%" height="100%">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-6 min-w-0">
+            <div className="relative size-36 sm:size-40 shrink-0 mx-auto sm:mx-0">
+              <ResponsiveContainer width="100%" height="100%" minWidth={0}>
                 <RadialBarChart innerRadius="72%" outerRadius="100%" data={[{ name: "occ", value: 86 }]} startAngle={90} endAngle={-270}>
                   <PolarAngleAxis type="number" domain={[0, 100]} tick={false} />
                   <RadialBar background={{ fill: "color-mix(in oklab, var(--primary) 12%, transparent)" }} dataKey="value" cornerRadius={20} fill="var(--primary)" />
@@ -181,16 +204,16 @@ export default function DashboardPage() {
                 <div className="text-[11px] uppercase tracking-widest text-muted-foreground">Booked</div>
               </div>
             </div>
-            <div className="flex-1 space-y-3 text-sm">
+            <div className="flex-1 space-y-3 text-sm min-w-0 w-full">
               <Stat label="Suites" value="92%" color="var(--primary)" />
               <Stat label="Villas" value="84%" color="var(--gold)" />
               <Stat label="Lofts" value="78%" color="var(--bronze)" />
             </div>
           </div>
-          <div className="h-28 mt-4 -mx-2">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={occupancyData}>
-                <XAxis dataKey="d" axisLine={false} tickLine={false} tick={{ fill: "var(--muted-foreground)", fontSize: 11 }} />
+          <div className="h-28 mt-4 min-w-0 w-full overflow-hidden">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} debounce={50}>
+              <BarChart data={occupancyData} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
+                <XAxis dataKey="d" axisLine={false} tickLine={false} tick={{ fill: "var(--muted-foreground)", fontSize: 10 }} />
                 <Bar dataKey="v" radius={[8, 8, 8, 8]} fill="var(--primary)" />
               </BarChart>
             </ResponsiveContainer>
@@ -199,19 +222,52 @@ export default function DashboardPage() {
       </div>
 
       {/* Bookings + Activity */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <Card className="lg:col-span-2 p-0 overflow-hidden">
-          <div className="p-6 pb-4 flex items-center justify-between">
-            <div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4 min-w-0">
+        <Card className="lg:col-span-2 p-0 overflow-hidden min-w-0">
+          <div className="p-4 sm:p-6 pb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between min-w-0">
+            <div className="min-w-0">
               <h3 className="font-display text-lg">Recent Bookings</h3>
               <p className="text-sm text-muted-foreground">Latest reservations across the estate</p>
             </div>
-            <Button variant="ghost" size="sm" className="rounded-lg">
+            <Button variant="ghost" size="sm" className="rounded-lg shrink-0 self-start sm:self-auto">
               View all <ArrowUpRight className="size-4" />
             </Button>
           </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+
+          {/* Mobile: card list */}
+          <div className="md:hidden divide-y divide-border border-t border-border">
+            {bookings.map((b) => (
+              <div key={b.id} className="p-4 flex gap-3 min-w-0">
+                <div className="size-10 shrink-0 rounded-full bg-gradient-gold flex items-center justify-center text-xs font-semibold text-coffee">
+                  {b.guest
+                    .split(" ")
+                    .map((n) => n[0])
+                    .slice(0, 2)
+                    .join("")}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="font-medium truncate">{b.guest}</p>
+                      <p className="text-xs text-muted-foreground">{b.id}</p>
+                    </div>
+                    <span className="text-sm font-medium shrink-0">{b.amount}</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground mt-1 truncate">{b.room}</p>
+                  <div className="flex flex-wrap items-center gap-2 mt-2">
+                    <StatusBadge status={b.status} />
+                    <span className="text-xs text-muted-foreground flex items-center gap-1">
+                      <Clock className="size-3 shrink-0" />
+                      <span className="truncate">{b.checkin}</span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="hidden md:block overflow-x-auto">
+            <table className="w-full text-sm min-w-[640px]">
               <thead>
                 <tr className="text-left text-xs uppercase tracking-wider text-muted-foreground bg-muted/40">
                   <Th>Reservation</Th>
@@ -255,7 +311,7 @@ export default function DashboardPage() {
           </div>
         </Card>
 
-        <Card>
+        <Card className="min-w-0">
           <CardHeader title="Activity" sub="Across all venues">
             <button className="text-muted-foreground hover:text-foreground">
               <MoreHorizontal className="size-4" />
@@ -287,7 +343,7 @@ function Card({ children, className = "" }: { children: React.ReactNode; classNa
     <motion.div
       whileHover={{ y: -2 }}
       transition={{ duration: 0.2 }}
-      className={`bg-card rounded-2xl border border-border shadow-soft hover:shadow-lift transition-shadow p-6 ${className}`}
+      className={`bg-card rounded-2xl border border-border shadow-soft hover:shadow-lift transition-shadow p-4 sm:p-6 min-w-0 max-w-full ${className}`}
     >
       {children}
     </motion.div>
@@ -304,12 +360,12 @@ function CardHeader({
   children?: React.ReactNode;
 }) {
   return (
-    <div className="flex items-start justify-between mb-4 gap-3">
-      <div>
+    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-4 gap-3 min-w-0">
+      <div className="min-w-0">
         <h3 className="font-display text-lg">{title}</h3>
         {sub && <p className="text-sm text-muted-foreground">{sub}</p>}
       </div>
-      {children}
+      {children && <div className="shrink-0">{children}</div>}
     </div>
   );
 }
@@ -360,10 +416,10 @@ function Stat({ label, value, color }: { label: string; value: string; color: st
 }
 
 function Th({ children, className = "" }: { children: React.ReactNode; className?: string }) {
-  return <th className={`px-6 py-3 font-medium ${className}`}>{children}</th>;
+  return <th className={`px-4 lg:px-6 py-3 font-medium whitespace-nowrap ${className}`}>{children}</th>;
 }
 function Td({ children, className = "" }: { children: React.ReactNode; className?: string }) {
-  return <td className={`px-6 py-3 ${className}`}>{children}</td>;
+  return <td className={`px-4 lg:px-6 py-3 ${className}`}>{children}</td>;
 }
 
 function StatusBadge({ status }: { status: string }) {
@@ -402,14 +458,14 @@ function KPICard({
     <motion.div
       whileHover={{ y: -3 }}
       transition={{ duration: 0.2 }}
-      className={`relative overflow-hidden rounded-2xl border border-border p-5 shadow-soft hover:shadow-lift transition-shadow ${
+      className={`relative overflow-hidden rounded-2xl border border-border p-4 sm:p-5 shadow-soft hover:shadow-lift transition-shadow min-w-0 max-w-full ${
         accent ? "bg-gradient-to-br from-primary/8 to-card" : "bg-card"
       }`}
     >
       <div className="flex items-start justify-between">
         <div>
           <div className="text-xs uppercase tracking-wider text-muted-foreground">{label}</div>
-          <div className="font-display text-3xl mt-1.5">{value}</div>
+          <div className="font-display text-2xl sm:text-3xl mt-1.5 truncate">{value}</div>
         </div>
         <div className={`size-10 rounded-xl flex items-center justify-center ${accent ? "bg-gradient-amber text-primary-foreground shadow-glow" : "bg-muted text-foreground"}`}>
           <Icon className="size-[18px]" />
@@ -420,8 +476,8 @@ function KPICard({
           {delta !== "—" && (deltaUp ? <ArrowUpRight className="size-3" /> : <ArrowDownRight className="size-3" />)}
           {delta}
         </div>
-        <div className="h-10 w-24 -mr-1">
-          <ResponsiveContainer width="100%" height="100%">
+        <div className="h-10 w-20 sm:w-24 shrink-0 overflow-hidden">
+          <ResponsiveContainer width="100%" height="100%" minWidth={0}>
             <AreaChart data={data}>
               <defs>
                 <linearGradient id={`sp-${label}`} x1="0" y1="0" x2="0" y2="1">

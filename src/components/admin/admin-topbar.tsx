@@ -21,10 +21,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-const LABELS: Record<string, string> = {
+export const ADMIN_PAGE_LABELS: Record<string, string> = {
   admin: "Dashboard",
-  bookings: "Bookings",
-  reservations: "Reservations",
+  bookings: "ALL",
+  reservations: "Table",
+  "room-bookings": "Room Bookings",
   rooms: "Rooms",
   restaurant: "Restaurant",
   events: "Events",
@@ -33,8 +34,20 @@ const LABELS: Record<string, string> = {
   "marketing-routes": "Marketing Page Routes",
   analytics: "Analytics",
   users: "Users",
+  notifications: "Notification",
   settings: "Settings",
+  homepage: "Homepage",
+  about: "About",
+  tiffinbox: "Tiffin Box",
+  reviews: "Reviews",
 };
+
+function getMobilePageTitle(pathname: string): string {
+  const segments = pathname.split("/").filter(Boolean);
+  const last = segments[segments.length - 1] ?? "admin";
+  if (pathname === "/admin" || pathname === "/admin/") return ADMIN_PAGE_LABELS.admin;
+  return ADMIN_PAGE_LABELS[last] ?? last.charAt(0).toUpperCase() + last.slice(1);
+}
 
 export function AdminTopbar() {
   const navigate = useNavigate();
@@ -42,6 +55,7 @@ export function AdminTopbar() {
   const { setMobileOpen } = useSidebarState();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const segments = pathname.split("/").filter(Boolean);
+  const mobileTitle = getMobilePageTitle(pathname);
 
   const initials = session?.name
     ? session.name
@@ -54,16 +68,24 @@ export function AdminTopbar() {
   const displayName = session?.name ?? "Amelia M.";
 
   return (
-    <header className="sticky top-0 z-30 h-16 px-4 md:px-8 flex items-center gap-3 border-b border-border glass">
+    <header className="sticky top-0 z-30 h-14 md:h-16 px-3 md:px-8 flex items-center gap-2 md:gap-3 border-b border-border glass pt-[env(safe-area-inset-top)]">
       <button
         onClick={() => setMobileOpen(true)}
-        className="md:hidden size-9 rounded-lg hover:bg-accent flex items-center justify-center"
+        className="md:hidden size-10 shrink-0 rounded-xl hover:bg-accent flex items-center justify-center"
+        aria-label="Open menu"
       >
         <Menu className="size-5" />
       </button>
 
+      <div className="md:hidden flex-1 min-w-0">
+        <p className="text-[11px] uppercase tracking-wider text-muted-foreground leading-none">
+          Amber Suite
+        </p>
+        <h1 className="text-base font-semibold truncate leading-tight mt-0.5">{mobileTitle}</h1>
+      </div>
+
       {/* Breadcrumbs */}
-      <div className="hidden md:flex items-center text-sm text-muted-foreground">
+      <div className="hidden md:flex items-center text-sm text-muted-foreground min-w-0">
         {segments.map((seg, i) => {
           const isLast = i === segments.length - 1;
           const href = "/" + segments.slice(0, i + 1).join("/");
@@ -78,7 +100,7 @@ export function AdminTopbar() {
                     : "hover:text-foreground transition-colors"
                 }
               >
-                {LABELS[seg] ?? seg.charAt(0).toUpperCase() + seg.slice(1)}
+                {ADMIN_PAGE_LABELS[seg] ?? seg.charAt(0).toUpperCase() + seg.slice(1)}
               </Link>
             </div>
           );
@@ -97,19 +119,19 @@ export function AdminTopbar() {
         />
       </div>
 
-      <ThemeToggle />
+      <ThemeToggle className="hidden sm:flex" />
 
-      <IconBtn badge>
+      <IconBtn badge className="hidden md:flex">
         <MessageSquare className="size-[18px]" />
       </IconBtn>
 
-      <IconBtn badge>
+      <IconBtn badge className="hidden md:flex">
         <Bell className="size-[18px]" />
       </IconBtn>
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <button className="flex items-center gap-2 pl-1 pr-2 h-10 rounded-xl hover:bg-accent transition-colors">
+          <button className="flex items-center gap-2 pl-1 pr-1 sm:pr-2 h-10 rounded-xl hover:bg-accent transition-colors shrink-0">
             <div className="size-8 rounded-full bg-gradient-gold flex items-center justify-center text-xs font-semibold text-coffee">
               {initials}
             </div>
@@ -144,11 +166,19 @@ export function AdminTopbar() {
   );
 }
 
-function IconBtn({ children, badge }: { children: React.ReactNode; badge?: boolean }) {
+function IconBtn({
+  children,
+  badge,
+  className = "",
+}: {
+  children: React.ReactNode;
+  badge?: boolean;
+  className?: string;
+}) {
   return (
     <motion.button
       whileTap={{ scale: 0.94 }}
-      className="relative size-10 rounded-xl hover:bg-accent flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+      className={`relative size-10 rounded-xl hover:bg-accent flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors ${className}`}
     >
       {children}
       {badge && (

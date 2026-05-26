@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Amber Suite Admin">
+  <defs>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#E8A84A"/>
+      <stop offset="100%" stop-color="#C9792B"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="#2B241F"/>
+  <rect x="48" y="48" width="416" height="416" rx="88" fill="url(#g)"/>
+  <path fill="#2B241F" d="M256 128c-52 0-94 38-94 85 0 28 16 53 42 67l-18 92h140l-18-92c26-14 42-39 42-67 0-47-42-85-94-85zm0 48c24 0 44 16 44 37s-20 37-44 37-44-16-44-37 20-37 44-37z"/>
+</svg>

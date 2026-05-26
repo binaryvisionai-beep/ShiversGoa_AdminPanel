@@ -27,6 +27,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { Reservation } from "@/lib/reservations/types";
 import { formatTimeSlot, normalizeTimeSlot } from "@/lib/reservations/time-slots";
+import { cn } from "@/lib/utils";
 
 const formSchema = z.object({
   time: z
@@ -41,7 +42,9 @@ type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   timeSlots: string[];
+  activeTime?: string;
   dayReservations: Reservation[];
+  onSelectTime?: (slot: string) => void;
   onAdd: (slot: string) => void;
   onRemove: (slot: string) => void;
   onRequestRemoveAll: () => void;
@@ -51,7 +54,9 @@ export function ManageTimeSlotsDialog({
   open,
   onOpenChange,
   timeSlots,
+  activeTime,
   dayReservations,
+  onSelectTime,
   onAdd,
   onRemove,
   onRequestRemoveAll,
@@ -93,7 +98,8 @@ export function ManageTimeSlotsDialog({
         <DialogHeader className="shrink-0 border-b border-border px-6 py-5 text-left">
           <DialogTitle className="font-display text-xl">Manage time slots</DialogTitle>
           <DialogDescription className="text-sm leading-relaxed">
-            Add or remove service times for the floor plan. Changes apply for this session only.
+            View, add, or remove service times. Tap a slot to show it on the floor plan. Changes
+            apply for this session only.
           </DialogDescription>
         </DialogHeader>
 
@@ -142,19 +148,32 @@ export function ManageTimeSlotsDialog({
             <ul className="space-y-2">
               {timeSlots.map((slot) => {
                 const bookings = bookingCountBySlot[slot] ?? 0;
+                const isActive = activeTime === slot;
                 return (
                   <li
                     key={slot}
-                    className="flex items-center justify-between gap-3 rounded-xl border border-border bg-muted/20 px-4 py-3"
+                    className={cn(
+                      "flex items-center justify-between gap-3 rounded-xl border px-4 py-3 transition-colors",
+                      isActive
+                        ? "border-primary/40 bg-primary/5 ring-1 ring-primary/20"
+                        : "border-border bg-muted/20",
+                    )}
                   >
-                    <div className="min-w-0">
+                    <button
+                      type="button"
+                      className="min-w-0 flex-1 text-left"
+                      onClick={() => onSelectTime?.(slot)}
+                    >
                       <p className="font-medium">{formatTimeSlot(slot)}</p>
                       {bookings > 0 && (
                         <p className="text-xs text-muted-foreground mt-0.5">
                           {bookings} booking{bookings === 1 ? "" : "s"} today
                         </p>
                       )}
-                    </div>
+                      {isActive && (
+                        <p className="text-xs text-primary mt-0.5">Showing on floor plan</p>
+                      )}
+                    </button>
                     <div className="flex shrink-0 items-center gap-2">
                       {bookings > 0 && (
                         <Badge variant="outline" className="rounded-full font-normal text-xs">

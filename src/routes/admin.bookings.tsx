@@ -1,11 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { PlaceholderPage } from "@/components/admin/placeholder-page";
+import BookingsPage from "@/pages/admin/Bookings";
 
 export const Route = createFileRoute("/admin/bookings")({
-  component: () => (
-    <PlaceholderPage
-      title="Bookings"
-      description="Manage current and upcoming guest reservations across every suite, villa, and loft."
-    />
-  ),
+  component: BookingsPage,
 });
