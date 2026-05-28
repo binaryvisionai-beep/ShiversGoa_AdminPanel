@@ -2,6 +2,8 @@ import { useRouterState, Link, useNavigate } from "@tanstack/react-router";
 import { useAuth } from "@/contexts/auth-context";
 import { AUTH_BYPASS } from "@/lib/auth";
 import { motion } from "framer-motion";
+// import { Link } from "@tanstack/react-router";
+
 import {
   Menu,
   Search,
@@ -125,9 +127,15 @@ export function AdminTopbar() {
         <MessageSquare className="size-[18px]" />
       </IconBtn>
 
-      <IconBtn badge className="hidden md:flex">
+      {/* <IconBtn badge className="hidden md:flex">
         <Bell className="size-[18px]" />
-      </IconBtn>
+      </IconBtn> */}
+<Link to="/admin/notifications">
+  <IconBtn badge>
+    <Bell className="size-[18px]" />
+  </IconBtn>
+</Link>
+
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>

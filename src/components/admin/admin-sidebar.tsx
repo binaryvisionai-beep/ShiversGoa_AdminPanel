@@ -19,6 +19,7 @@ import {
   ChevronsLeft,
   Search,
   Sparkles,
+  MessageCircle,
 } from "lucide-react";
 import { useAuth } from "@/contexts/auth-context";
 import { useSidebarState } from "./sidebar-context";
@@ -116,6 +117,7 @@ const NAV: { section: string; items: Item[] }[] = [
         to: "/admin/marketing-routes",
         icon: Route,
       },
+      { to: "/admin/whatsapp", label: "WhatsApp", icon: MessageCircle },
     ],
   },
 
